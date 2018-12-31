@@ -21,6 +21,7 @@ from urllib.parse import urlencode
 import xml.etree.ElementTree as ET
 import json
 import os
+import sys
 # ------------------------------------
 class INFO:
     def __init__(self):
@@ -32,7 +33,7 @@ class INFO:
         self.ccbaKdcd = { # 종목 코드
             "11": "국보",         "12": "보물",
             "13": "사적",         "14": "사적및명승",
-            "15": "명승",
+            "15": "명승",         "16": "천연기념물",
             "79": "등록문화재",
         }
         self.ccbaCtcd = { # 시도 코드
@@ -56,8 +57,26 @@ class CH_Location_Search:
         t_url = self.url + "?" + t_param
         t_html = req.get(t_url)
         if t_html.status_code == 200:
-            with open(file="../CONF_CURTURE/ch_{}_localtion.xml".format(self.params["ccbaMnm1"]), mode='w', encoding='utf-8') as f:
-                f.write(t_html.text)
+            try:
+                with open(file="../CONF_CURTURE/ch_{}_localtion.xml".format(self.params["ccbaMnm1"]), mode='w', encoding='utf-8') as f:
+                    f.write(t_html.text)
+            except:
+                if OSError.errno == 22:
+                    if "<" in str(self.params["ccbaMnm1"]):
+                        self.params["ccbaMnm1"] = str(self.params["ccbaMnm1"]).replace(old="<", new=" ")
+                    elif ">" in str(self.params["ccbaMnm1"]):
+                        self.params["ccbaMnm1"] = str(self.params["ccbaMnm1"]).replace(old=">", new=" ")
+                    elif "," in str(self.params["ccbaMnm1"]):
+                        self.params["ccbaMnm1"] = str(self.params["ccbaMnm1"]).replace(old=",", new=" ")
+                try:
+                    with open(file="../CONF_CURTURE/ch_{}_localtion.xml".format(self.params["ccbaMnm1"]), mode='w',
+                              encoding='utf-8') as f:
+                        f.write(t_html.text)
+                except:
+                    sys.exit(1)
+                else:
+                    f.close()
+            else:
                 f.close()
 class CH:
     node = INFO()                          # 포함관계의 객체
